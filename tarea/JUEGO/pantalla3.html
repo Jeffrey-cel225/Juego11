@@ -1,0 +1,78 @@
+<!--  PANTALLA 3: GAMEPLAY -->
+  <link rel="stylesheet" href="style.css">
+<section class="screen" id="gameplay" style="justify-content:center">
+  <div class="screen-label">📱 Pantalla 3 — Gameplay</div>
+  <div style="text-align:center; margin-bottom:16px; position:relative; z-index:2">
+    <div style="font-family:'Baloo 2',cursive; font-size:1.6rem; font-weight:800; color:white; text-shadow:2px 2px 6px rgba(0,0,0,0.5)">🌳 Amazonía — Nivel 2</div>
+    <div style="color:rgba(255,255,255,0.8); font-size:0.9rem; font-weight:600">¡Toca los animales para descubrir datos curiosos!</div>
+  </div>
+
+  <div class="game-container">
+    <!-- HUD -->
+    <div class="game-hud">
+      <div class="hud-lives">❤️❤️❤️</div>
+      <div class="hud-progress-wrap">
+        <div class="hud-progress-bar"></div>
+      </div>
+      <div class="hud-score">⭐ 840</div>
+      <div class="hud-coins">🪙×12</div>
+    </div>
+
+    <!-- Escena -->
+    <div class="game-scene">
+      <div class="sky"></div>
+      <div class="clouds-scene">
+        <div class="cloud-scene" style="animation-delay:0s"></div>
+        <div class="cloud-scene" style="animation-delay:3s; width:50px; height:20px;"></div>
+        <div class="cloud-scene" style="animation-delay:5s; width:85px; height:28px;"></div>
+      </div>
+
+      <!-- Árboles -->
+      <span class="scene-tree st-1">🌴</span>
+      <span class="scene-tree st-2">🌿</span>
+      <span class="scene-tree st-3">🌳</span>
+      <span class="scene-tree st-4">🌲</span>
+
+      <div class="ground">
+        <div class="ground-detail"></div>
+      </div>
+
+      <!-- Personaje -->
+      <div class="player-char">🧒</div>
+
+      <!-- Animales flotantes -->
+      <div class="floating-animal fa-1">
+        <span class="animal-emoji">🦜</span>
+        <div class="animal-bubble">?</div>
+      </div>
+      <div class="floating-animal fa-2">
+        <span class="animal-emoji">🐆</span>
+        <div class="animal-bubble">?</div>
+      </div>
+      <div class="floating-animal fa-3">
+        <span class="animal-emoji">🐊</span>
+        <div class="animal-bubble">?</div>
+      </div>
+
+      <!-- Tarjeta emergente de animal -->
+      <div class="animal-card">
+        <span class="ac-close">✕</span>
+        <div class="ac-emoji">🦜</div>
+        <div class="ac-name">Guacamayo Escarlata</div>
+        <div class="ac-fact">¡Puede aprender hasta 100 palabras! Vive en la selva amazónica del Ecuador 🌿</div>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="game-controls">
+      <div class="ctrl-section">
+        <div class="dpad">
+          <button class="ctrl-btn">⬅️</button>
+          <button class="ctrl-btn">➡️</button>
+        </div>
+      </div>
+      <button class="ctrl-btn pause-btn">⏸️</button>
+      <button class="ctrl-btn jump-btn">⬆️</button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Reto — Quiz de Biodiversidad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --jungle-1:#0F5132;
+    --jungle-2:#1B7A4D;
+    --jungle-3:#2FA36B;
+    --leaf:#3FBF7F;
+    --sun:#FFC145;
+    --coral:#FF6B5B;
+    --card:#ffffff;
+    --ink:#1E2A22;
+    --muted:#8A9690;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family:'Nunito', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:28px 14px 60px;
+  }
+
+  @keyframes floatBf{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-18px) rotate(6deg); }
+  }
+
+  .screen{
+    position:relative;
+    width:100%;
+    max-width:430px;
+    min-height:760px;
+    border-radius:32px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,255,255,0.10), transparent 55%),
+      linear-gradient(160deg, var(--jungle-1), var(--jungle-2) 55%, var(--jungle-3));
+    box-shadow: 0 30px 60px rgba(15,81,50,0.35);
+    padding:26px 18px 24px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .screen-label{
+    position:absolute;
+    top:10px; left:50%;
+    transform:translateX(-50%);
+    font-size:0.72rem;
+    font-weight:700;
+    color:rgba(255,255,255,0.55);
+    letter-spacing:.03em;
+  }
+
+  .quiz-overlay{
+    position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 0%, rgba(255,255,255,0.06), transparent 60%);
+    pointer-events:none;
+  }
+
+  /* ---- Modal ---- */
+  .quiz-modal{
+    position:relative;
+    z-index:2;
+    background:var(--card);
+    border-radius:24px;
+    padding:22px 20px 20px;
+    margin-top:26px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .quiz-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .quiz-badge{
+    background:rgba(63,191,127,0.14);
+    color:var(--jungle-1);
+    font-weight:800;
+    font-size:0.8rem;
+    padding:7px 13px;
+    border-radius:100px;
+  }
+  .quiz-points{
+    background:rgba(255,193,69,0.18);
+    color:#9A6B00;
+    font-weight:800;
+    font-size:0.8rem;
+    padding:7px 13px;
+    border-radius:100px;
+    transition: transform .25s;
+  }
+  .quiz-points.bump{ animation:pointsBump .4s ease; }
+  @keyframes pointsBump{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.18); }
+    100%{ transform:scale(1); }
+  }
+
+  .timer-wrap{
+    display:flex;
+    justify-content:center;
+    margin:4px 0 14px;
+  }
+  .timer-circle{ position:relative; width:80px; height:80px; }
+  .timer-circle svg{ transform:rotate(-90deg); }
+  .timer-track{
+    fill:none;
+    stroke:#EFF3EF;
+    stroke-width:7;
+  }
+  .timer-fill{
+    fill:none;
+    stroke:var(--leaf);
+    stroke-width:7;
+    stroke-linecap:round;
+    stroke-dasharray:201;
+    stroke-dashoffset:0;
+    transition: stroke-dashoffset 1s linear, stroke .3s;
+  }
+  .timer-fill.low{ stroke:var(--coral); }
+  .timer-number{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:1.3rem; color:var(--ink);
+  }
+
+  .quiz-question{
+    font-weight:800;
+    font-size:1.15rem;
+    line-height:1.35;
+    text-align:center;
+    margin-bottom:18px;
+    color:var(--ink);
+  }
+
+  .quiz-options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .quiz-opt{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#F5F7F4;
+    border:2px solid transparent;
+    border-radius:16px;
+    padding:13px 14px;
+    cursor:pointer;
+    transition: background .15s, border-color .15s, transform .1s;
+    position:relative;
+  }
+  .quiz-opt:hover:not(.locked){ background:#ECF3EC; transform:translateY(-1px); }
+  .quiz-opt:active:not(.locked){ transform:scale(0.98); }
+  .quiz-opt.locked{ cursor:default; }
+  .quiz-opt-emoji{ font-size:1.4rem; }
+  .quiz-opt-text{ font-weight:700; font-size:0.95rem; color:var(--ink); flex:1; }
+
+  .quiz-opt.correct{
+    background:rgba(63,191,127,0.14);
+    border-color:var(--leaf);
+  }
+  .quiz-opt.correct::after{
+    content:"✓";
+    font-weight:900;
+    color:var(--jungle-1);
+    font-size:1.1rem;
+  }
+  .quiz-opt.wrong{
+    background:rgba(255,107,91,0.13);
+    border-color:var(--coral);
+  }
+  .quiz-opt.wrong::after{
+    content:"✕";
+    font-weight:900;
+    color:var(--coral);
+    font-size:1.1rem;
+  }
+
+  .quiz-footer{
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-size:0.82rem;
+    color:var(--muted);
+    font-weight:700;
+  }
+  .streak-fire{ display:inline-block; }
+  .streak-fire.active{ animation:flicker 0.6s ease infinite alternate; }
+  @keyframes flicker{
+    from{ transform:scale(1); }
+    to{ transform:scale(1.15); }
+  }
+
+  .toast{
+    position:absolute;
+    top:96px; left:50%;
+    transform:translate(-50%,-8px);
+    background:var(--jungle-1);
+    color:#fff;
+    font-weight:800;
+    font-size:0.85rem;
+    padding:9px 16px;
+    border-radius:100px;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .25s, transform .25s;
+    z-index:5;
+    white-space:nowrap;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+
+  /* ---- Result ---- */
+  .result-modal{
+    display:none;
+    background:var(--card);
+    border-radius:24px;
+    padding:32px 22px;
+    margin-top:26px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+    text-align:center;
+    flex:1;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .result-modal.show{ display:flex; }
+  .result-emoji{ font-size:3.4rem; margin-bottom:6px; }
+  .result-title{ font-weight:900; font-size:1.35rem; color:var(--jungle-1); margin:0 0 6px; }
+  .result-score{ font-weight:900; font-size:2.4rem; color:var(--coral); margin:6px 0; }
+  .result-msg{ font-size:0.9rem; color:var(--muted); font-weight:600; max-width:32ch; margin:0 auto 22px; }
+  .result-stats{
+    display:flex; justify-content:center; gap:10px; margin-bottom:22px;
+  }
+  .stat-pill{
+    background:#F5F7F4; border-radius:14px; padding:10px 14px; font-weight:800; font-size:0.8rem; color:var(--ink);
+  }
+  .restart-btn{
+    background:var(--jungle-1);
+    color:#fff;
+    border:none;
+    padding:13px 24px;
+    border-radius:100px;
+    font-weight:800;
+    font-size:0.95rem;
+    cursor:pointer;
+    transition: background .15s;
+  }
+  .restart-btn:hover{ background:var(--jungle-3); }
+</style>
+</head>
+<body>
+
+<section class="screen" id="quizScreen">
+  <div class="screen-label">📱 Mini Reto — Biodiversidad</div>
+
+  <div class="quiz-overlay"></div>
+  <div style="position:absolute; inset:0; pointer-events:none; overflow:hidden;">
+    <div style="position:absolute; top:15%; left:8%; font-size:3.6rem; opacity:0.16; animation:floatBf 5s ease-in-out infinite">🌿</div>
+    <div style="position:absolute; bottom:12%; right:6%; font-size:4.4rem; opacity:0.16; animation:floatBf 7s ease-in-out infinite 1s">🦋</div>
+    <div style="position:absolute; top:44%; left:2%; font-size:2.8rem; opacity:0.14; animation:floatBf 6s ease-in-out infinite 2s">🌺</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="quiz-modal" id="quizModal">
+    <div class="quiz-header">
+      <div class="quiz-badge" id="quizBadge">🌿 Biodiversidad</div>
+      <div class="quiz-points" id="quizPoints">🏆 0 pts</div>
+    </div>
+
+    <div class="timer-wrap">
+      <div class="timer-circle">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="timer-track" cx="40" cy="40" r="32"/>
+          <circle class="timer-fill" id="timerFill" cx="40" cy="40" r="32"/>
+        </svg>
+        <div class="timer-number" id="timerNumber">15</div>
+      </div>
+    </div>
+
+    <div class="quiz-question" id="quizQuestion"></div>
+
+    <div class="quiz-options" id="quizOptions"></div>
+
+    <div class="quiz-footer">
+      <span id="footerProgress">Pregunta 1 de 10</span>
+      <span>•</span>
+      <span>📊 Racha: <span id="streakCount">0</span> <span class="streak-fire" id="streakFire">🔥</span></span>
+    </div>
+  </div>
+
+  <div class="result-modal" id="resultModal">
+    <div class="result-emoji" id="resultEmoji">🏆</div>
+    <div class="result-title" id="resultTitle">¡Reto completado!</div>
+    <div class="result-score" id="resultScore">0 pts</div>
+    <p class="result-msg" id="resultMsg"></p>
+    <div class="result-stats">
+      <div class="stat-pill" id="statCorrect">✅ 0/10</div>
+      <div class="stat-pill" id="statStreak">🔥 Mejor racha: 0</div>
+    </div>
+    <button class="restart-btn" id="restartBtn">Jugar de nuevo</button>
+  </div>
+</section>
+
+<script>
+const questions = [
+  {
+    q: "¿Qué significa exactamente la palabra 'biodiversidad'? 🌍",
+    options: [
+      { text: "Variedad de especies, genes y ecosistemas de un lugar", emoji: "🧬", correct: true },
+      { text: "La cantidad de animales de un zoológico", emoji: "🦁", correct: false },
+      { text: "El número de plantas cultivadas", emoji: "🌾", correct: false },
+      { text: "La diversidad de paisajes turísticos", emoji: "🏞️", correct: false }
+    ]
+  },
+  {
+    q: "¿Cuál es la principal causa de pérdida de biodiversidad en el mundo? 🌳",
+    options: [
+      { text: "Destrucción y fragmentación de hábitats", emoji: "🪓", correct: true },
+      { text: "Usar bicicleta en la ciudad", emoji: "🚲", correct: false },
+      { text: "Observar aves con binoculares", emoji: "🔭", correct: false },
+      { text: "Reciclar papel y cartón", emoji: "♻️", correct: false }
+    ]
+  },
+  {
+    q: "¿Qué es un ecosistema? 🌱",
+    options: [
+      { text: "Seres vivos y su ambiente físico interactuando", emoji: "🔗", correct: true },
+      { text: "Un grupo de plantas del mismo tipo", emoji: "🌵", correct: false },
+      { text: "Un área protegida por el gobierno", emoji: "🏛️", correct: false },
+      { text: "Una especie presente en varios continentes", emoji: "🗺️", correct: false }
+    ]
+  },
+  {
+    q: "¿Por qué son importantes los polinizadores como las abejas? 🐝",
+    options: [
+      { text: "Producen oxígeno directamente", emoji: "💨", correct: false },
+      { text: "Permiten la reproducción de muchas plantas", emoji: "🌸", correct: true },
+      { text: "Controlan las inundaciones", emoji: "🌊", correct: false },
+      { text: "Limpian el aire de contaminantes", emoji: "🌬️", correct: false }
+    ]
+  },
+  {
+    q: "¿Qué acción cotidiana ayuda más a la biodiversidad local? 🏡",
+    options: [
+      { text: "Comprar siempre productos importados", emoji: "📦", correct: false },
+      { text: "Plantar especies nativas en jardines", emoji: "🌿", correct: true },
+      { text: "Usar pesticidas con frecuencia", emoji: "🧪", correct: false },
+      { text: "Soltar mascotas exóticas en la naturaleza", emoji: "🦎", correct: false }
+    ]
+  },
+  {
+    q: "¿Qué es una 'especie invasora'? 🐌",
+    options: [
+      { text: "Una especie en peligro de extinción", emoji: "🐼", correct: false },
+      { text: "Una especie que solo vive en zoológicos", emoji: "🦓", correct: false },
+      { text: "Una especie foránea que desplaza a las nativas", emoji: "🚨", correct: true },
+      { text: "Una especie que migra cada año", emoji: "🕊️", correct: false }
+    ]
+  },
+  {
+    q: "¿Cuál de estos es un ejemplo de área natural protegida? 🏝️",
+    options: [
+      { text: "Un centro comercial con jardines", emoji: "🏬", correct: false },
+      { text: "Un parque nacional o reserva biológica", emoji: "🏕️", correct: true },
+      { text: "Un vivero de plantas ornamentales", emoji: "🪴", correct: false },
+      { text: "Una granja de monocultivo", emoji: "🚜", correct: false }
+    ]
+  },
+  {
+    q: "¿Qué papel cumplen los depredadores en un ecosistema? 🐆",
+    options: [
+      { text: "Ninguno, se pueden eliminar sin problema", emoji: "🚫", correct: false },
+      { text: "Regulan poblaciones y mantienen el equilibrio", emoji: "⚖️", correct: true },
+      { text: "Solo compiten entre ellos", emoji: "🤺", correct: false },
+      { text: "Aceleran la extinción de las plantas", emoji: "🥀", correct: false }
+    ]
+  },
+  {
+    q: "¿Cuál es el animal endémico más famoso de las Islas Galápagos? 🏝️",
+    options: [
+      { text: "Tortuga Gigante de Galápagos", emoji: "🐢", correct: true },
+      { text: "León Africano", emoji: "🦁", correct: false },
+      { text: "Caimán del Amazonas", emoji: "🐊", correct: false },
+      { text: "Águila Arpía", emoji: "🦅", correct: false }
+    ]
+  },
+  {
+    q: "¿Cómo ayuda reducir el plástico a la biodiversidad marina? 🐠",
+    options: [
+      { text: "No tiene relación con la naturaleza", emoji: "🤷", correct: false },
+      { text: "Solo afecta a la economía", emoji: "💰", correct: false },
+      { text: "Evita que la fauna se enrede o lo ingiera", emoji: "🐢", correct: true },
+      { text: "Aumenta la cantidad de peces directamente", emoji: "🐟", correct: false }
+    ]
+  }
+];
+
+const TIME_PER_Q = 15;
+const RADIUS = 32;
+const CIRC = 2 * Math.PI * RADIUS;
+
+let current = 0;
+let points = 0;
+let correctCount = 0;
+let streak = 0;
+let bestStreak = 0;
+let timeLeft = TIME_PER_Q;
+let timerInterval = null;
+let locked = false;
+
+const quizQuestion = document.getElementById('quizQuestion');
+const quizOptions = document.getElementById('quizOptions');
+const quizPoints = document.getElementById('quizPoints');
+const footerProgress = document.getElementById('footerProgress');
+const streakCount = document.getElementById('streakCount');
+const streakFire = document.getElementById('streakFire');
+const timerFill = document.getElementById('timerFill');
+const timerNumber = document.getElementById('timerNumber');
+const toast = document.getElementById('toast');
+const quizModal = document.getElementById('quizModal');
+const resultModal = document.getElementById('resultModal');
+const resultEmoji = document.getElementById('resultEmoji');
+const resultTitle = document.getElementById('resultTitle');
+const resultScore = document.getElementById('resultScore');
+const resultMsg = document.getElementById('resultMsg');
+const statCorrect = document.getElementById('statCorrect');
+const statStreak = document.getElementById('statStreak');
+const restartBtn = document.getElementById('restartBtn');
+
+timerFill.style.strokeDasharray = CIRC;
+
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 900);
+}
+
+function startTimer(){
+  timeLeft = TIME_PER_Q;
+  updateTimerUI();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      if(!locked) lockAnswer(-1); // tiempo agotado, sin respuesta
+    }
+  }, 1000);
+}
+
+function updateTimerUI(){
+  timerNumber.textContent = timeLeft;
+  const offset = CIRC * (1 - timeLeft / TIME_PER_Q);
+  timerFill.style.strokeDashoffset = offset;
+  timerFill.classList.toggle('low', timeLeft <= 4);
+}
+
+function renderQuestion(){
+  locked = false;
+  const item = questions[current];
+  quizQuestion.textContent = item.q;
+  quizOptions.innerHTML = '';
+
+  item.options.forEach((opt, idx) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-opt';
+    div.innerHTML = '<span class="quiz-opt-emoji">' + opt.emoji + '</span><span class="quiz-opt-text">' + opt.text + '</span>';
+    div.addEventListener('click', () => lockAnswer(idx));
+    quizOptions.appendChild(div);
+  });
+
+  footerProgress.textContent = "Pregunta " + (current+1) + " de " + questions.length;
+  startTimer();
+}
+
+function lockAnswer(idx){
+  if(locked) return;
+  locked = true;
+  clearInterval(timerInterval);
+
+  const item = questions[current];
+  const opts = quizOptions.querySelectorAll('.quiz-opt');
+  const correctIdx = item.options.findIndex(o => o.correct);
+
+  opts.forEach(o => o.classList.add('locked'));
+
+  if(idx === correctIdx){
+    opts[idx].classList.add('correct');
+    correctCount++;
+    streak++;
+    bestStreak = Math.max(bestStreak, streak);
+    const gained = 50 + (streak > 1 ? (streak - 1) * 10 : 0);
+    points += gained;
+    quizPoints.textContent = "🏆 " + points + " pts";
+    quizPoints.classList.remove('bump');
+    void quizPoints.offsetWidth;
+    quizPoints.classList.add('bump');
+    showToast("+" + gained + " pts 🎉");
+  } else {
+    if(idx >= 0) opts[idx].classList.add('wrong');
+    opts[correctIdx].classList.add('correct');
+    streak = 0;
+    showToast("¡Sigue intentando! 💪");
+  }
+
+  streakCount.textContent = streak;
+  streakFire.classList.toggle('active', streak >= 2);
+
+  setTimeout(() => {
+    current++;
+    if(current < questions.length){
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }, 1400);
+}
+
+function showResult(){
+  quizModal.style.display = 'none';
+  resultModal.classList.add('show');
+
+  const pct = correctCount / questions.length;
+  resultScore.textContent = points + " pts";
+  statCorrect.textContent = "✅ " + correctCount + "/" + questions.length;
+  statStreak.textContent = "🔥 Mejor racha: " + bestStreak;
+
+  if(pct === 1){
+    resultEmoji.textContent = "🏆";
+    resultTitle.textContent = "¡Guardián de la biodiversidad!";
+    resultMsg.textContent = "Puntaje perfecto. Dominas los conceptos clave sobre biodiversidad y su cuidado.";
+  } else if(pct >= 0.7){
+    resultEmoji.textContent = "🌿";
+    resultTitle.textContent = "¡Muy buen resultado!";
+    resultMsg.textContent = "Tienes una base sólida. Repasa las que fallaste para completar tu conocimiento.";
+  } else if(pct >= 0.4){
+    resultEmoji.textContent = "🌱";
+    resultTitle.textContent = "Vas por buen camino";
+    resultMsg.textContent = "Conoces varios conceptos clave. Inténtalo de nuevo para reforzar los que faltan.";
+  } else {
+    resultEmoji.textContent = "🍂";
+    resultTitle.textContent = "Buen punto de partida";
+    resultMsg.textContent = "Vuelve a jugar para afianzar los conceptos sobre biodiversidad y su cuidado.";
+  }
+}
+
+restartBtn.addEventListener('click', () => {
+  current = 0; points = 0; correctCount = 0; streak = 0; bestStreak = 0;
+  quizPoints.textContent = "🏆 0 pts";
+  streakCount.textContent = "0";
+  streakFire.classList.remove('active');
+  resultModal.classList.remove('show');
+  quizModal.style.display = 'flex';
+  renderQuestion();
+});
+
+renderQuestion();
+</script>
+</body>
+</html>

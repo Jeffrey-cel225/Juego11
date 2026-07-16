@@ -1,0 +1,54 @@
+<link rel="stylesheet" href="style.css"></link>
+<div id="app">
+<div class="tab-panel" id="tab-juego">
+    <div id="juego-wrapper">
+      <div class="juego-header">
+        <div class="juego-titulo"> ¡Rescata Animales de la Amazonia!</div>
+        <div class="juego-stats">
+          <span class="stat-juego">⭐ <span id="j-puntos">0</span></span>
+          <span class="stat-juego tiempo">⏱️ <span id="j-tiempo">30</span>s</span>
+          <span class="stat-juego vida">❤️ <span id="j-vidas">3</span></span>
+        </div>
+      </div>
+       <nav>
+  <div class="nav-logo">🌿 EcoExplorer</div>
+  <ul class="nav-links">
+    <li><a href="pantalla1.html">Menú</a></li>
+    <li><a href="pantalla2.html">Ecosistemas</a></li>
+    <li><a href="pantalla3.html">Juego</a></li>
+    <li><a href="pantalla4.html">Quiz</a></li>
+    <li><a href="pantalla5.html">Logros</a></li>
+  </ul>
+</nav>
+      <div id="canvas-container">
+        <canvas id="canvas-juego" width="700" height="380"></canvas>
+
+        <!-- Pantalla de inicio -->
+        <div id="pantalla-inicio">
+          <div class="pantalla-titulo">�  Rescata la Amazonia 🌿</div>
+          <div class="pantalla-sub">¡Mueve la red para atrapar los animales de la selva antes de que se escapen! Evita los residuos 🗑️</div>
+          <button class="btn-juego" onclick="iniciarJuego()">▶ ¡Empezar!</button>
+        </div>
+
+        <!-- Pantalla de fin -->
+        <div id="pantalla-fin">
+          <div class="pantalla-titulo" id="fin-titulo">🎉 ¡Juego Terminado!</div>
+          <div class="pantalla-sub" id="fin-sub">Puntuación: 0</div>
+          <button class="btn-juego" onclick="reiniciarJuego()">🔄 ¡Jugar de nuevo!</button>
+        </div>
+      </div>
+
+      <div class="juego-controles">
+        <button class="btn-juego secundario" onclick="pausarJuego()" id="btn-pausa">⏸ Pausa</button>
+      </div>
+      <p class="instrucciones">🖱️ Mueve el ratón o tu dedo para mover la red · ¡Atrapa animales, evita la basura!</p>
+    </div>
+  </div>
+
+  <!-- ====== STATS GLOBALES ====== -->
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <footer>🌿 Ecuador — uno de los 17 países megadiversos del mundo · ¡Cuídalo! 🌎</footer>
+</div>
+
+<script src="game.js"></script>
